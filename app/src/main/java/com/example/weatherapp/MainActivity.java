@@ -6,16 +6,22 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.Locale;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -29,6 +35,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Locale;
 
 //implementing the OnSuccessListener in this activity since there is only a single callback.
 public class MainActivity extends AppCompatActivity implements OnSuccessListener<Location> {
@@ -49,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements OnSuccessListener
     private Context context;
 
 
-
+    private final int REQ_CODE = 100;
     //Volley request queue;
     private RequestQueue queue;
 
@@ -81,6 +90,26 @@ public class MainActivity extends AppCompatActivity implements OnSuccessListener
         //Instantiate the request queue
         queue = Volley.newRequestQueue(this);
 
+
+        idTextView = findViewById(R.id.text);
+        ImageView speak = findViewById(R.id.speak);
+        speak.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+                intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Need to speak");
+                try {
+                    startActivityForResult(intent, REQ_CODE);
+                } catch (ActivityNotFoundException a) {
+                    Toast.makeText(getApplicationContext(),
+                            "Sorry your device not supported",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
 
 
@@ -146,6 +175,21 @@ public class MainActivity extends AppCompatActivity implements OnSuccessListener
         fusedLocationClient.getLastLocation().addOnSuccessListener(this,this);
 
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case REQ_CODE: {
+                if (resultCode == RESULT_OK && null != data) {
+                    ArrayList result = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    idTextView.setText((Integer) result.get(0));
+                }
+                break;
+            }
+        }
     }
 
 

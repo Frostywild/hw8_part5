@@ -48,4 +48,10 @@
         android:name="com.example.weatherapp.MapsFragment"
         android:layout_width="match_parent"
         android:layout_height="352dp" />
+
+    <Button
+        android:id="@+id/textSpeech"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Text To Speech" />
 </LinearLayout>
